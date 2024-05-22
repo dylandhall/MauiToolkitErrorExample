@@ -1,24 +1,47 @@
-﻿namespace ErrorExample;
+﻿using CommunityToolkit.Maui.Media;
+using System.Diagnostics;
+using System.Globalization;
+
+namespace ErrorExample;
 
 public partial class MainPage : ContentPage
 {
-	int count = 0;
 
 	public MainPage()
 	{
 		InitializeComponent();
+
+        SpeechToText.Default.RecognitionResultUpdated += Default_RecognitionResultUpdated;
 	}
 
-	private void OnCounterClicked(object sender, EventArgs e)
+    private void Default_RecognitionResultUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs e)
+    {
+        OutputLabel.Dispatcher.Dispatch(() => OutputLabel.Text = e.RecognitionResult);
+    }
+
+    private async void OnStartClick(object sender, EventArgs e)
 	{
-		count++;
-
-		if (count == 1)
-			CounterBtn.Text = $"Clicked {count} time";
-		else
-			CounterBtn.Text = $"Clicked {count} times";
-
-		SemanticScreenReader.Announce(CounterBtn.Text);
+		try
+		{
+			await SpeechToText.Default.StartListenAsync(CultureInfo.GetCultureInfo("en-US"));
+		}
+		catch (Exception ex) {
+			Debug.WriteLine(ex.Message);
+			Debug.WriteLine(ex.StackTrace);
+		}
 	}
+
+    private async void OnStopClick(object sender, EventArgs e)
+    {
+        try
+        {
+            await SpeechToText.Default.StopListenAsync();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+            Debug.WriteLine(ex.StackTrace);
+        }
+    }
 }
 
